@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 工具使用调查问卷</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F8FA;
+    --card: #FFFFFF;
+    --border: #E2E6ED;
+    --primary: #2563EB;
+    --primary-light: #EFF6FF;
+    --accent: #0EA5E9;
+    --text: #1A202C;
+    --muted: #64748B;
+    --success: #10B981;
+    --success-bg: #ECFDF5;
+    --tag-bg: #F1F5F9;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Top nav ── */
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; color: var(--primary); letter-spacing: -0.3px; }
+  .tab-group { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 6px 18px; border-radius: 8px; border: none; background: none;
+    cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted);
+    transition: all .18s;
+  }
+  .tab-btn.active { background: var(--primary-light); color: var(--primary); }
+  .tab-btn:hover:not(.active) { background: var(--tag-bg); color: var(--text); }
+
+  /* ── Layout ── */
+  .page { display: none; }
+  .page.visible { display: block; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 36px 20px 60px; }
+  .wide { max-width: 1000px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #1D4ED8 0%, #0EA5E9 100%);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 36px 32px 28px;
+    margin-bottom: 28px;
+  }
+  .hero h1 { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+  .hero p { font-size: 14px; opacity: .85; line-height: 1.6; }
+  .hero-meta { margin-top: 18px; display: flex; gap: 20px; }
+  .hero-meta span {
+    background: rgba(255,255,255,.18);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ── Questions ── */
+  .q-label {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    margin-bottom: 14px; line-height: 1.5;
+  }
+  .q-label .q-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; background: var(--primary); color: #fff;
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+    margin-right: 8px; flex-shrink: 0; vertical-align: middle;
+  }
+  .q-required { color: #EF4444; margin-left: 2px; }
+
+  /* ── Chip select ── */
+  .chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    padding: 8px 16px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--card);
+    cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted);
+    transition: all .15s; user-select: none;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); }
+  .chip.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+  /* ── Efficiency table ── */
+  .eff-table { width: 100%; border-collapse: collapse; }
+  .eff-table th {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    padding: 6px 10px; text-align: center; background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .eff-table th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+  .eff-table th:last-child { border-radius: 0 6px 0 0; }
+  .eff-table td {
+    padding: 10px; border-bottom: 1px solid var(--border);
+    font-size: 13px; text-align: center;
+  }
+  .eff-table td:first-child { text-align: left; color: var(--text); font-weight: 500; }
+  .eff-table tr:last-child td { border-bottom: none; }
+  .eff-table input[type=radio] { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+  .eff-table tr:hover td { background: var(--tag-bg); }
+  .task-tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tag-sw { background: #EFF6FF; color: #2563EB; }
+  .tag-algo { background: #F0FDF4; color: #15803D; }
+  .tag-hw { background: #FFF7ED; color: #C2410C; }
+  .tag-all { background: #FAF5FF; color: #7E22CE; }
+
+  /* ── Satisfaction ── */
+  .sat-scale { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sat-btn {
+    width: 48px; height: 48px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--card);
+    font-size: 16px; cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; justify-content: center; font-weight: 600;
+  }
+  .sat-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+  .sat-btn.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .sat-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* ── Textarea ── */
+  textarea {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 14px; resize: vertical;
+    font-family: inherit; color: var(--text); background: var(--card);
+    transition: border .15s; min-height: 90px;
+  }
+  textarea:focus { outline: none; border-color: var(--primary); }
+
+  /* ── Submit ── */
+  .submit-btn {
+    width: 100%; padding: 15px; border-radius: 10px;
+    background: linear-gradient(90deg, #2563EB, #0EA5E9);
+    color: #fff; border: none; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.3px;
+    transition: opacity .2s, transform .1s;
+  }
+  .submit-btn:hover { opacity: .92; }
+  .submit-btn:active { transform: scale(.99); }
+  .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Success ── */
+  #success-card { display: none; text-align: center; padding: 48px 32px; }
+  #success-card .check { font-size: 56px; margin-bottom: 16px; }
+  #success-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  #success-card p { color: var(--muted); font-size: 14px; }
+
+  /* ── Dashboard ── */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+  .stat-num { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; }
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 12px; background: var(--primary-light); color: var(--primary); }
+
+  /* ── Bar chart ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; }
+  .bar-label { width: 110px; font-size: 12px; color: var(--text); flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; background: var(--tag-bg); border-radius: 6px; height: 22px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #2563EB, #0EA5E9); transition: width .5s ease; display: flex; align-items: center; padding-left: 8px; }
+  .bar-val { font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .bar-count { font-size: 12px; color: var(--muted); width: 30px; text-align: right; flex-shrink: 0; }
+
+  /* ── Eff heatmap ── */
+  .eff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .eff-item { background: var(--tag-bg); border-radius: 10px; padding: 14px 16px; }
+  .eff-task { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .eff-bars { display: flex; flex-direction: column; gap: 5px; }
+  .eff-bar-row { display: flex; align-items: center; gap: 8px; }
+  .eff-tier { font-size: 10px; color: var(--muted); width: 65px; flex-shrink: 0; }
+  .eff-bar-mini { flex: 1; height: 8px; border-radius: 4px; background: var(--border); position: relative; overflow: hidden; }
+  .eff-bar-mini-fill { height: 100%; border-radius: 4px; }
+  .eff-bar-mini-val { font-size: 10px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
+
+  .refresh-btn {
+    padding: 8px 18px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 13px; font-weight: 600;
+    cursor: pointer; color: var(--text); transition: all .15s;
+  }
+  .refresh-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .no-data { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 620px) {
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .eff-grid { grid-template-columns: 1fr; }
+    .container { padding: 20px 14px 60px; }
+    .card { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<div class="topbar">
+  <div class="topbar-logo">🤖 AI 使用调查</div>
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="showPage('survey')">填写问卷</button>
+    <button class="tab-btn" onclick="showPage('dashboard')">数据汇总</button>
+  </div>
+</div>
+
+<!-- ═══════════════ SURVEY PAGE ═══════════════ -->
+<div id="page-survey" class="page visible">
+  <div class="container">
+
+    <div class="hero">
+      <h1>AI 工具使用情况调查</h1>
+      <p>帮助公司了解 AI 工具的使用现状与效率提升效果，调查完全匿名，结果仅供内部参考。</p>
+      <div class="hero-meta">
+        <span>📋 约 5 分钟</span>
+        <span>🔒 匿名填写</span>
+        <span>📊 实时汇总</span>
+      </div>
+    </div>
+
+    <!-- Q1 团队 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">1</span>你所在的团队<span class="q-required">*</span></div>
+      <div class="chip-group" id="q1">
+        <div class="chip" data-val="软件团队" onclick="selectChip(this,'q1','single')">💻 软件团队</div>
+        <div class="chip" data-val="算法团队" onclick="selectChip(this,'q1','single')">🧮 算法团队</div>
+        <div class="chip" data-val="硬件团队" onclick="selectChip(this,'q1','single')">🔧 硬件团队</div>
+        <div class="chip" data-val="管理/其他" onclick="selectChip(this,'q1','single')">📋 管理/其他</div>
+      </div>
+    </div>
+
+    <!-- Q2 使用频率 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">2</span>你在工作中使用 AI 工具的频率<span class="q-required">*</span></div>
+      <div class="chip-group" id="q2">
+        <div class="chip" data-val="几乎不用" onclick="selectChip(this,'q2','single')">几乎不用</div>
+        <div class="chip" data-val="偶尔（每周1-2次）" onclick="selectChip(this,'q2','single')">偶尔（每周1-2次）</div>
+        <div class="chip" data-val="经常（每周3-5次）" onclick="selectChip(this,'q2','single')">经常（每周3-5次）</div>
+        <div class="chip" data-val="每天使用" onclick="selectChip(this,'q2','single')">每天使用</div>
+      </div>
+    </div>
+
+    <!-- Q3 工具选择 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">3</span>你主要使用哪些 AI 工具？（可多选）<span class="q-required">*</span></div>
+      <div class="chip-group" id="q3">
+        <div class="chip" data-val="ChatGPT" onclick="selectChip(this,'q3','multi')">ChatGPT</div>
+        <div class="chip" data-val="Claude" onclick="selectChip(this,'q3','multi')">Claude</div>
+        <div class="chip" data-val="Gemini" onclick="selectChip(this,'q3','multi')">Gemini</div>
+        <div class="chip" data-val="GitHub Copilot" onclick="selectChip(this,'q3','multi')">GitHub Copilot</div>
+        <div class="chip" data-val="Cursor" onclick="selectChip(this,'q3','multi')">Cursor / Windsurf</div>
+        <div class="chip" data-val="Perplexity" onclick="selectChip(this,'q3','multi')">Perplexity</div>
+        <div class="chip" data-val="Grok" onclick="selectChip(this,'q3','multi')">Grok</div>
+        <div class="chip" data-val="其他" onclick="selectChip(this,'q3','multi')">其他</div>
+      </div>
+    </div>
+
+    <!-- Q4 效率提升表 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">4</span>以下工作场景中，AI 工具对你的效率提升大约是多少？<span class="q-required">*</span><br>
+        <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:30px;">（不适用的场景请跳过）</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="eff-table" id="q4">
+          <thead>
+            <tr>
+              <th style="min-width:160px;">工作场景</th>
+              <th>不适用</th>
+              <th>0–10%</th>
+              <th>10–30%</th>
+              <th>30–50%</th>
+              <th>50–70%</th>
+              <th>70%+</th>
+            </tr>
+          </thead>
+          <tbody id="eff-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Q5 使用场景类型 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">5</span>你主要用 AI 工具做什么？（可多选）<span class="q-required">*</span></div>
+      <div class="chip-group" id="q5">
+        <div class="chip" data-val="写代码/debug" onclick="selectChip(this,'q5','multi')">写代码 / Debug</div>
+        <div class="chip" data-val="文档/报告撰写" onclick="selectChip(this,'q5','multi')">文档 / 报告撰写</div>
+        <div class="chip" data-val="查资料/学新技术" onclick="selectChip(this,'q5','multi')">查资料 / 学新技术</div>
+        <div class="chip" data-val="数据分析/图表" onclick="selectChip(this,'q5','multi')">数据分析 / 图表</div>
+        <div class="chip" data-val="方案设计/brainstorm" onclick="selectChip(this,'q5','multi')">方案设计 / Brainstorm</div>
+        <div class="chip" data-val="翻译/润色" onclick="selectChip(this,'q5','multi')">翻译 / 润色</div>
+        <div class="chip" data-val="邮件/沟通文字" onclick="selectChip(this,'q5','multi')">邮件 / 沟通文字</div>
+      </div>
+    </div>
+
+    <!-- Q6 满意度 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">6</span>整体来说，你对当前 AI 工具的使用效果满意度如何？<span class="q-required">*</span></div>
+      <div class="sat-scale" id="q6">
+        <button class="sat-btn" data-val="1" onclick="selectSat(this,'q6')">1</button>
+        <button class="sat-btn" data-val="2" onclick="selectSat(this,'q6')">2</button>
+        <button class="sat-btn" data-val="3" onclick="selectSat(this,'q6')">3</button>
+        <button class="sat-btn" data-val="4" onclick="selectSat(this,'q6')">4</button>
+        <button class="sat-btn" data-val="5" onclick="selectSat(this,'q6')">5</button>
+        <button class="sat-btn" data-val="6" onclick="selectSat(this,'q6')">6</button>
+        <button class="sat-btn" data-val="7" onclick="selectSat(this,'q6')">7</button>
+        <button class="sat-btn" data-val="8" onclick="selectSat(this,'q6')">8</button>
+        <button class="sat-btn" data-val="9" onclick="selectSat(this,'q6')">9</button>
+        <button class="sat-btn" data-val="10" onclick="selectSat(this,'q6')">10</button>
+      </div>
+      <div class="sat-labels"><span>😐 完全不满意</span><span>🤩 非常满意</span></div>
+    </div>
+
+    <!-- Q7 公司支持 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">7</span>你希望公司在 AI 工具方面提供哪些支持？（可多选）</div>
+      <div class="chip-group" id="q7">
+        <div class="chip" data-val="提供付费账号" onclick="selectChip(this,'q7','multi')">💳 提供付费账号</div>
+        <div class="chip" data-val="组织培训/分享" onclick="selectChip(this,'q7','multi')">📚 组织培训 / 分享</div>
+        <div class="chip" data-val="内部知识库/提示词库" onclick="selectChip(this,'q7','multi')">🗂 内部知识库 / 提示词库</div>
+        <div class="chip" data-val="制定使用规范" onclick="selectChip(this,'q7','multi')">📋 制定使用规范</div>
+        <div class="chip" data-val="不需要额外支持" onclick="selectChip(this,'q7','multi')">✅ 不需要额外支持</div>
+      </div>
+    </div>
+
+    <!-- Q8 顾虑 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">8</span>使用 AI 工具时，你有哪些顾虑？（可多选）</div>
+      <div class="chip-group" id="q8">
+        <div class="chip" data-val="数据安全/保密" onclick="selectChip(this,'q8','multi')">🔐 数据安全 / 保密</div>
+        <div class="chip" data-val="输出准确性" onclick="selectChip(this,'q8','multi')">⚠️ 输出准确性</div>
+        <div class="chip" data-val="过度依赖AI" onclick="selectChip(this,'q8','multi')">🤖 过度依赖 AI</div>
+        <div class="chip" data-val="不知如何高效使用" onclick="selectChip(this,'q8','multi')">❓ 不知如何高效使用</div>
+        <div class="chip" data-val="没有顾虑" onclick="selectChip(this,'q8','multi')">👍 没有顾虑</div>
+      </div>
+    </div>
+
+    <!-- Q9 开放问题 -->
+    <div class="card">
+      <div class="q-label"><span class="q-num">9</span>有什么想分享的 AI 使用心得，或对公司推进 AI 的建议？（选填）</div>
+      <textarea id="q9" placeholder="请自由填写，例如：某个工具特别好用的场景、希望团队统一尝试的方向……"></textarea>
+    </div>
+
+    <!-- Submit -->
+    <div class="card" style="text-align:center;padding:24px 32px;" id="submit-section">
+      <button class="submit-btn" onclick="submitSurvey()">提交问卷 →</button>
+      <p style="margin-top:12px;font-size:12px;color:var(--muted);">提交后可在「数据汇总」页查看实时结果</p>
+    </div>
+
+    <!-- Success -->
+    <div class="card" id="success-card">
+      <div class="check">✅</div>
+      <h2>提交成功，谢谢！</h2>
+      <p style="margin-top:8px;">你的回答已记录。点击顶部「数据汇总」查看实时统计结果。</p>
+      <button class="submit-btn" style="margin-top:24px;max-width:200px;" onclick="showPage('dashboard')">查看汇总数据 →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD PAGE ═══════════════ -->
+<div id="page-dashboard" class="page">
+  <div class="container wide">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:800;">📊 数据汇总</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">实时统计所有提交的问卷</div>
+      </div>
+      <button class="refresh-btn" onclick="loadDashboard()">🔄 刷新数据</button>
+    </div>
+
+    <div id="dash-content">
+      <div class="no-data">加载中...</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// TASKS CONFIG
+// ══════════════════════════════════════════
+const TASKS = [
+  { label: '嵌入式代码开发', tag: 'sw', team: '软件/算法' },
+  { label: '软件/App 开发', tag: 'sw', team: '软件' },
+  { label: '算法开发 / ML', tag: 'algo', team: '算法' },
+  { label: '电路 / PCB 设计', tag: 'hw', team: '硬件' },
+  { label: '结构设计 / CAD', tag: 'hw', team: '硬件' },
+  { label: '信号处理 / DSP', tag: 'algo', team: '算法/硬件' },
+  { label: '文档 / 报告撰写', tag: 'all', team: '全员' },
+  { label: '专利 / 技术文件', tag: 'all', team: '全员' },
+  { label: '测试 / QA', tag: 'sw', team: '软件' },
+  { label: '数据分析', tag: 'all', team: '全员' },
+];
+
+const EFF_LEVELS = ['不适用', '0–10%', '10–30%', '30–50%', '50–70%', '70%+'];
+const EFF_COLORS = ['#CBD5E1', '#93C5FD', '#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8'];
+
+const TAG_HTML = {
+  sw:   '<span class="task-tag tag-sw">软件</span>',
+  algo: '<span class="task-tag tag-algo">算法</span>',
+  hw:   '<span class="task-tag tag-hw">硬件</span>',
+  all:  '<span class="task-tag tag-all">全员</span>',
+};
+
+// ── Build efficiency table ──
+function buildEffTable() {
+  const tbody = document.getElementById('eff-tbody');
+  TASKS.forEach((task, i) => {
+    const tr = document.createElement('tr');
+    let cells = `<td>${task.label}${TAG_HTML[task.tag]}</td>`;
+    EFF_LEVELS.forEach(lvl => {
+      cells += `<td><input type="radio" name="eff_${i}" value="${lvl}"></td>`;
+    });
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+  });
+}
+buildEffTable();
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('visible'));
+  document.getElementById('page-' + name).classList.add('visible');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.includes(name === 'survey' ? '填写' : '汇总')) b.classList.add('active');
+  });
+  if (name === 'dashboard') loadDashboard();
+}
+
+// ══════════════════════════════════════════
+// FORM INTERACTIONS
+// ══════════════════════════════════════════
+function selectChip(el, groupId, mode) {
+  if (mode === 'single') {
+    document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+}
+
+function selectSat(el, groupId) {
+  document.querySelectorAll(`#${groupId} .sat-btn`).forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ══════════════════════════════════════════
+// COLLECT & SUBMIT
+// ══════════════════════════════════════════
+function getChipVals(groupId) {
+  return [...document.querySelectorAll(`#${groupId} .chip.selected`)].map(c => c.dataset.val);
+}
+function getSingleChip(groupId) {
+  const sel = document.querySelector(`#${groupId} .chip.selected`);
+  return sel ? sel.dataset.val : null;
+}
+function getSat(groupId) {
+  const sel = document.querySelector(`#${groupId} .sat-btn.selected`);
+  return sel ? parseInt(sel.dataset.val) : null;
+}
+function getEfficiency() {
+  const result = {};
+  TASKS.forEach((task, i) => {
+    const checked = document.querySelector(`input[name="eff_${i}"]:checked`);
+    if (checked && checked.value !== '不适用') result[task.label] = checked.value;
+  });
+  return result;
+}
+
+// ══════════════════════════════════════════
+// JSONBIN CONFIG
+// ══════════════════════════════════════════
+const JSONBIN_KEY = '$2a$10$y.3RflcK9R6NWvgM3F7b3OeJXsMIUAya.xq0Y/sMr/Rw0BM33imdK';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+const BIN_ID = '6a3c542df5f4af5e292b6665';
+
+async function readResponses() {
+  const res = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': JSONBIN_KEY },
+  });
+  const data = await res.json();
+  return data.record?.responses || [];
+}
+
+async function writeResponses(responses) {
+  await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_KEY,
+    },
+    body: JSON.stringify({ responses }),
+  });
+}
+
+async function submitSurvey() {
+  const team = getSingleChip('q1');
+  const freq = getSingleChip('q2');
+  const tools = getChipVals('q3');
+  const usages = getChipVals('q5');
+  const sat = getSat('q6');
+
+  if (!team) { alert('请选择你所在的团队'); return; }
+  if (!freq) { alert('请选择使用频率'); return; }
+  if (!tools.length) { alert('请选择 AI 工具'); return; }
+  if (!usages.length) { alert('请选择使用场景'); return; }
+  if (!sat) { alert('请选择满意度评分'); return; }
+
+  const btn = document.querySelector('.submit-btn');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+
+  try {
+    const entry = {
+      ts: Date.now(),
+      team, freq, tools,
+      efficiency: getEfficiency(),
+      usages,
+      satisfaction: sat,
+      support: getChipVals('q7'),
+      concerns: getChipVals('q8'),
+      comment: document.getElementById('q9').value.trim(),
+    };
+
+    const responses = await readResponses();
+    responses.push(entry);
+    await writeResponses(responses);
+
+    document.getElementById('submit-section').style.display = 'none';
+    document.getElementById('success-card').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    alert('提交失败，请检查网络后重试');
+    btn.disabled = false;
+    btn.textContent = '提交问卷 →';
+  }
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+async function loadDashboard() {
+  const el = document.getElementById('dash-content');
+  el.innerHTML = '<div class="no-data">加载中...</div>';
+
+  try {
+    const responses = await readResponses();
+    if (!responses.length) {
+      el.innerHTML = '<div class="no-data">📭 暂无数据，请等待同事填写问卷后刷新</div>';
+      return;
+    }
+    el.innerHTML = buildDash(responses);
+  } catch(e) {
+    el.innerHTML = '<div class="no-data">⚠️ 加载失败，请刷新重试</div>';
+  }
+}
+
+function countBy(arr, keyFn) {
+  const map = {};
+  arr.forEach(item => {
+    const keys = [].concat(keyFn(item)).filter(Boolean);
+    keys.forEach(k => { map[k] = (map[k] || 0) + 1; });
+  });
+  return map;
+}
+
+function sortedEntries(map) {
+  return Object.entries(map).sort((a,b) => b[1]-a[1]);
+}
+
+function buildBarSection(title, map, total) {
+  const entries = sortedEntries(map);
+  const bars = entries.map(([label, count]) => {
+    const pct = Math.round(count / total * 100);
+    return `<div class="bar-row">
+      <div class="bar-label">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"><span class="bar-val">${pct}%</span></div></div>
+      <div class="bar-count">${count}</div>
+    </div>`;
+  }).join('');
+  return `<div class="card"><div class="section-title">${title} <span class="badge">${entries.length} 个选项</span></div>
+    <div class="bar-chart">${bars}</div></div>`;
+}
+
+function buildDash(responses) {
+  const n = responses.length;
+  const avgSat = (responses.reduce((s,r) => s + (r.satisfaction||0), 0) / n).toFixed(1);
+  const allTools = countBy(responses, r => r.tools);
+  const topTool = sortedEntries(allTools)[0]?.[0] || '-';
+
+  // Stats
+  const stats = `<div class="dash-grid">
+    <div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">📋 总提交数</div></div>
+    <div class="stat-card"><div class="stat-num">${avgSat}</div><div class="stat-label">⭐ 平均满意度（满分10）</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:18px;margin-top:4px;">${topTool}</div><div class="stat-label">🏆 最多使用工具</div></div>
+  </div>`;
+
+  // Team
+  const teamHtml = buildBarSection('按团队分布', countBy(responses, r => r.team), n);
+
+  // Frequency
+  const freqHtml = buildBarSection('使用频率', countBy(responses, r => r.freq), n);
+
+  // Tools
+  const toolsHtml = buildBarSection('AI 工具使用情况（多选）', allTools, n);
+
+  // Usage scenarios
+  const usagesHtml = buildBarSection('主要使用场景（多选）', countBy(responses, r => r.usages), n);
+
+  // Efficiency heatmap
+  const effMap = {};
+  responses.forEach(r => {
+    Object.entries(r.efficiency || {}).forEach(([task, level]) => {
+      if (!effMap[task]) effMap[task] = {};
+      effMap[task][level] = (effMap[task][level] || 0) + 1;
+    });
+  });
+
+  const effItems = Object.entries(effMap).map(([task, levelCounts]) => {
+    const total = Object.values(levelCounts).reduce((s,v)=>s+v,0);
+    const bars = ['10–30%', '30–50%', '50–70%', '70%+', '0–10%'].map(tier => {
+      const cnt = levelCounts[tier] || 0;
+      const pct = total ? Math.round(cnt/total*100) : 0;
+      const color = EFF_COLORS[EFF_LEVELS.indexOf(tier)];
+      return `<div class="eff-bar-row">
+        <div class="eff-tier">${tier}</div>
+        <div class="eff-bar-mini"><div class="eff-bar-mini-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="eff-bar-mini-val">${cnt}</div>
+      </div>`;
+    }).join('');
+    return `<div class="eff-item">
+      <div class="eff-task">📌 ${task}</div>
+      <div class="eff-bars">${bars}</div>
+    </div>`;
+  }).join('');
+
+  const effHtml = effItems ? `<div class="card">
+    <div class="section-title">各场景效率提升分布 <span class="badge">仅统计有填写项</span></div>
+    <div class="eff-grid">${effItems}</div>
+  </div>` : '';
+
+  // Support & Concerns
+  const supportHtml = buildBarSection('希望公司提供的支持（多选）', countBy(responses, r => r.support), n);
+  const concernsHtml = buildBarSection('使用顾虑（多选）', countBy(responses, r => r.concerns), n);
+
+  // Comments
+  const comments = responses.filter(r => r.comment).map(r =>
+    `<div style="background:var(--tag-bg);border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.6;border-left:3px solid var(--primary);">${r.comment}</div>`
+  ).join('');
+  const commentsHtml = comments ? `<div class="card">
+    <div class="section-title">💬 开放性反馈</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">${comments}</div>
+  </div>` : '';
+
+  return stats + teamHtml + freqHtml + toolsHtml + usagesHtml + effHtml + supportHtml + concernsHtml + commentsHtml;
+}
+</script>
+</body>
+</html>
